@@ -1,0 +1,60 @@
+// --- SHADOW OMNI SYSTEM COMMANDS ---
+
+function send() {
+    const input = document.getElementById("in"), chat = document.getElementById("chat");
+    let val = sanitize(input.value.trim()); 
+    if(!val) return;
+
+    chat.innerHTML += `<div class="msg user">${val}</div>`;
+    const text = val.toLowerCase();
+    input.value = "";
+
+    setTimeout(() => {
+        let reply = "";
+        
+        // 1. SELF-DESTRUCT / WIPE COMMAND
+        if (text === "system | wipe") {
+            if (confirm("WARNING: Intelligence database wipe initiated. Are you sure?")) {
+                localStorage.removeItem('omni_brain'); // Memory delete
+                memory = { // Reset to Default
+                    "hi": ["Access granted, Shadow.", "System online."],
+                    "status": ["Nodes cleared. Brain is empty."]
+                };
+                reply = "Neural database successfully wiped. Systems restarted.";
+                setTimeout(() => location.reload(), 1500); // Reload to reset state
+            } else {
+                reply = "Wipe command aborted. Intelligence nodes safe.";
+            }
+        } 
+        
+        // 2. SIKHO PIPELINE (Purana Logic)
+        else if (text.startsWith("sikho |")) {
+            const p = val.split("|");
+            if(p.length === 3) {
+                let key = p[1].trim().toLowerCase();
+                let value = p[2].trim();
+                if(!memory[key]) memory[key] = [];
+                memory[key].push(value);
+                localStorage.setItem('omni_brain', JSON.stringify(memory));
+                reply = "Good job! Let's learn more.";
+            } else { reply = "Syntax Error. Use: sikho | key | value"; }
+        } 
+        
+        // 3. SEARCH & CONTEXT LOGIC (Multi-Response)
+        else {
+            let foundKey = Object.keys(memory).find(k => text.includes(k));
+            if(foundKey) {
+                let responses = memory[foundKey];
+                reply = Array.isArray(responses) ? responses[Math.floor(Math.random() * responses.length)] : responses;
+            } else {
+                reply = "Data missing. Training required.";
+            }
+        }
+
+        const aiDiv = document.createElement("div");
+        aiDiv.className = "msg ai";
+        chat.appendChild(aiDiv);
+        type(aiDiv, reply);
+        updateStatus();
+    }, 600);
+}
